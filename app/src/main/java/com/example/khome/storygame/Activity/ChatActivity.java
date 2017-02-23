@@ -17,6 +17,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -52,9 +53,11 @@ public class ChatActivity extends AppCompatActivity {
 
     List<Message> m;
     int f;
+    boolean submitClicked=false;
     MessagesListAdapter<Message> adapter;
     TextWatcher textListener = null;
     EditText inputEdit;
+    ImageButton inputButton;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,6 +83,7 @@ public class ChatActivity extends AppCompatActivity {
         final String s1="Hi,who are u I am very Hungry";
         f=0;
         inputEdit=inputView.getInputEditText();
+        inputButton=inputView.getButton();
 
 
         textListener = new TextWatcher() {
@@ -98,26 +102,44 @@ public class ChatActivity extends AppCompatActivity {
             public void beforeTextChanged(CharSequence s,int start,int count, int after){}
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 inputEdit.removeTextChangedListener(textListener);
-                if(f<s1.length()) {
+                if(submitClicked==true)
+                {
+                    inputButton.setEnabled(false);
+
+                }
+                else if(f<s1.length()) {
+                    inputButton.setEnabled(false);
                     inputEdit.setText(s1.subSequence(0, f));
                     inputEdit.setSelection(f);
                 }
                 else
                 {
+                    inputButton.setEnabled(true);
                     inputEdit.setText(s1);
-
                     inputEdit.setSelection(s1.length());
                 }
                     inputEdit.addTextChangedListener(textListener);
                 f++;
+                if(f==s1.length())
+                    inputButton.setEnabled(true);
+
 
                 try {
 
-                    MediaPlayer mediaPlayer = MediaPlayer.create(ChatActivity.this, R.raw.sound);
-                    mediaPlayer.start();
-                    /*Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                    /*MediaPlayer mediaPlayer = MediaPlayer.create(ChatActivity.this, R.raw.sound);
+                    mediaPlayer.start();*/
+                    Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
                     Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
-                    r.play();*/
+                    r.play();
+
+
+                    /*Uri path = Uri.parse("android.resource://"+getPackageName()+"/raw/sound3.mp3");
+                    RingtoneManager.setActualDefaultRingtoneUri(
+                            getApplicationContext(), RingtoneManager.TYPE_RINGTONE,
+                            path);
+                    Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), path);
+                    r.play();
+*/
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -131,6 +153,7 @@ public class ChatActivity extends AppCompatActivity {
             public boolean onTouch(View v, MotionEvent event) {
                 //Toast.makeText(ChatActivity.this, "Hikasdf", Toast.LENGTH_SHORT).show();
 
+                submitClicked=false;
                 openKeyboard(inputView.getInputEditText());
                 return true;
             }
@@ -142,6 +165,16 @@ public class ChatActivity extends AppCompatActivity {
         inputView.setInputListener(new MessageInput.InputListener() {
             @Override
             public boolean onSubmit(CharSequence input) {
+                //Toast.makeText(ChatActivity.this, ""+inputEdit.getText(), Toast.LENGTH_SHORT).show();
+
+
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(inputEdit.getWindowToken(), 0);
+                inputEdit.setText("");
+                submitClicked=true;
+                f=0;
+
+
                 Date d=new Date();
                 Message m=new Message();
                 m.setText(input+"");
@@ -153,9 +186,8 @@ public class ChatActivity extends AppCompatActivity {
                 a.setAvatar(null);
                 m.setAuthor(a);
 
-
                 adapter.addToStart(m, true);
-                inputEdit.setText("");
+
                 return true;
             }
         });
