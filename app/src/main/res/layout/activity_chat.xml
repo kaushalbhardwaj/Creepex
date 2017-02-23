@@ -21,12 +21,15 @@
         android:layout_height="match_parent"
         android:layout_below="@+id/toolbar"
         android:layout_above="@+id/input"/>
+
     <com.stfalcon.chatkit.messages.MessageInput
         android:id="@+id/input"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        app:inputHint="Type a Message....."/>
+        app:inputHint="Type a Message.....">
+
+    </com.stfalcon.chatkit.messages.MessageInput>
 
 
 </RelativeLayout>
