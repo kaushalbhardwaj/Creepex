@@ -6,6 +6,7 @@ import android.media.MediaPlayer;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -19,6 +20,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.example.khome.storygame.ChatClasses.Author;
@@ -50,6 +52,10 @@ public class ChatActivity extends AppCompatActivity {
     MessageInput inputView;
     @BindView(R.id.toolbar)
     Toolbar toolbar;
+    @BindView(R.id.typingDisplay)
+    LinearLayout typingLayout;
+    @BindView(R.id.status)
+    ImageView messageStatus;
 
     List<Message> m;
     int f;
@@ -68,8 +74,9 @@ public class ChatActivity extends AppCompatActivity {
         startActivity(i);*/
 
         setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle("KDPGame");
+        //getSupportActionBar().setTitle("KDPGame");
 
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         setUpListener();
 
         setMessageList();
@@ -82,6 +89,7 @@ public class ChatActivity extends AppCompatActivity {
 
         final String s1="Hi,who are u I am very Hungry";
         f=0;
+
         inputEdit=inputView.getInputEditText();
         inputButton=inputView.getButton();
 
@@ -105,12 +113,14 @@ public class ChatActivity extends AppCompatActivity {
                 if(submitClicked==true)
                 {
                     inputButton.setEnabled(false);
+                    submitClicked=false;
 
                 }
                 else if(f<s1.length()) {
-                    inputButton.setEnabled(false);
                     inputEdit.setText(s1.subSequence(0, f));
                     inputEdit.setSelection(f);
+                    inputButton.setEnabled(false);
+
                 }
                 else
                 {
@@ -128,10 +138,10 @@ public class ChatActivity extends AppCompatActivity {
 
                     /*MediaPlayer mediaPlayer = MediaPlayer.create(ChatActivity.this, R.raw.sound);
                     mediaPlayer.start();*/
-                    Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                /*    Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
                     Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
                     r.play();
-
+*/
 
                     /*Uri path = Uri.parse("android.resource://"+getPackageName()+"/raw/sound3.mp3");
                     RingtoneManager.setActualDefaultRingtoneUri(
@@ -153,7 +163,10 @@ public class ChatActivity extends AppCompatActivity {
             public boolean onTouch(View v, MotionEvent event) {
                 //Toast.makeText(ChatActivity.this, "Hikasdf", Toast.LENGTH_SHORT).show();
 
+
                 submitClicked=false;
+                typingLayout.setVisibility(View.VISIBLE);
+                messageStatus.setVisibility(View.GONE);
                 openKeyboard(inputView.getInputEditText());
                 return true;
             }
@@ -171,6 +184,7 @@ public class ChatActivity extends AppCompatActivity {
                 InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(inputEdit.getWindowToken(), 0);
                 inputEdit.setText("");
+                typingLayout.setVisibility(View.GONE);
                 submitClicked=true;
                 f=0;
 
@@ -186,7 +200,14 @@ public class ChatActivity extends AppCompatActivity {
                 a.setAvatar(null);
                 m.setAuthor(a);
 
+
                 adapter.addToStart(m, true);
+
+                messageStatus.setVisibility(View.VISIBLE);
+                messageStatus.setImageDrawable(ContextCompat.getDrawable(ChatActivity.this,R.drawable.ic_reached));
+
+                messageStatus.setImageDrawable(ContextCompat.getDrawable(ChatActivity.this,R.drawable.ic_read));
+
 
                 return true;
             }
@@ -209,7 +230,6 @@ public class ChatActivity extends AppCompatActivity {
     private void setMessageList() {
 
         m=new ArrayList<Message>();
-
 
         adapter = new MessagesListAdapter<>("1",imageLoader);
         Date date = new Date();

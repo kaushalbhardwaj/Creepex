@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/activity_main"
@@ -8,28 +8,128 @@
     tools:context="com.example.khome.storygame.Activity.ChatActivity">
 
 
-    <android.support.v7.widget.Toolbar
-        android:id="@+id/toolbar"
+
+    <LinearLayout
+        android:orientation="horizontal"
         android:layout_width="match_parent"
-        app:titleTextColor="#ffffff"
-        android:background="?attr/colorPrimary"
-        android:layout_height="?attr/actionBarSize" />
+        android:layout_height="match_parent">
 
-    <com.stfalcon.chatkit.messages.MessagesList
-        android:id="@+id/messagesList"
+        <LinearLayout
+            android:orientation="vertical"
+
+            android:background="#424242"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+
+            <android.support.v7.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                app:titleTextColor="#ffffff"
+                android:background="?attr/colorPrimary"
+                android:layout_height="?attr/actionBarSize" >
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_marginTop="5dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:text="BotKDP"
+                        android:textColor="#ffffff"
+                        android:textSize="18sp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/textView1" />
+
+                    <TextView
+                        android:text="Online"
+                        android:textColor="#ffffff"
+                        android:textSize="12sp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/textView" />
+
+
+
+
+                </LinearLayout>
+
+                </android.support.v7.widget.Toolbar>
+
+
+
+
+            <com.stfalcon.chatkit.messages.MessagesList
+                android:id="@+id/messagesList"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginRight="5dp"
+                android:layout_weight="10"
+                app:outcomingTextSize="15sp"
+                app:incomingTextSize="15sp"
+                app:dateHeaderTextColor="#424242"
+                app:incomingTimeTextSize="12sp"
+                app:outcomingTimeTextSize="12sp"
+                app:incomingAvatarHeight="30dp"
+                app:incomingAvatarWidth="30dp"
+                android:layout_below="@+id/toolbar"
+                android:layout_above="@+id/input"/>
+
+            <LinearLayout
+                android:id="@+id/typingDisplay"
+                android:orientation="vertical"
+                android:visibility="gone"
+                android:background="@color/warm_grey"
+                android:layout_width="match_parent"
+                android:layout_height="40dp">
+
+                <pl.droidsonroids.gif.GifImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/giphy"
+                    />
+            </LinearLayout>
+
+            <com.stfalcon.chatkit.messages.MessageInput
+                android:id="@+id/input"
+                android:layout_width="match_parent"
+                app:inputTextColor="#ffffff"
+                android:layout_height="wrap_content"
+                app:inputTextSize="15sp"
+                android:layout_alignParentBottom="true"
+                app:inputHint="Type a Message.....">
+
+            </com.stfalcon.chatkit.messages.MessageInput>
+
+
+
+
+        </LinearLayout>
+
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@+id/toolbar"
-        android:layout_above="@+id/input"/>
-
-    <com.stfalcon.chatkit.messages.MessageInput
-        android:id="@+id/input"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        app:inputHint="Type a Message.....">
-
-    </com.stfalcon.chatkit.messages.MessageInput>
+        android:layout_marginBottom="70dp"
+        android:gravity="bottom"
+        android:layout_height="match_parent">
 
 
-</RelativeLayout>
+        <android.support.v7.widget.AppCompatImageView
+            android:layout_width="15dp"
+            android:layout_height="15dp"
+            android:layout_marginRight="3dp"
+            android:layout_gravity="right"
+            app:srcCompat="@drawable/ic_read"
+            android:id="@+id/status" />
+
+    </LinearLayout>
+
+
+
+</FrameLayout>
