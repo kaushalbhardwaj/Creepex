@@ -16,6 +16,9 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -31,8 +34,11 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.example.khome.storygame.Adapter.RecyclerTouchListener;
+import com.example.khome.storygame.Adapter.SuggestionAdapter;
 import com.example.khome.storygame.ChatClasses.Author;
 import com.example.khome.storygame.ChatClasses.Message;
+import com.example.khome.storygame.ChatClasses.Suggestion;
 import com.example.khome.storygame.R;
 import com.squareup.picasso.Downloader;
 import com.squareup.picasso.Picasso;
@@ -64,6 +70,10 @@ public class ChatActivity extends AppCompatActivity {
     Toolbar toolbar;
     @BindView(R.id.typingDisplay)
     LinearLayout typingLayout;
+    @BindView(R.id.suggestion_list)
+    RecyclerView suggestionView;
+    @BindView(R.id.suggestionDisplay)
+    LinearLayout suggestionLayout;
 
     static String IC_REACHED="file:///android_asset/ic_reached.png";
     static String IC_SENT="file:///android_asset/ic_sent.png";
@@ -72,12 +82,16 @@ public class ChatActivity extends AppCompatActivity {
     static  int DELAY_READ=1500;
     List<Message> m;
     Message oStatusMessage=null;
+    List<Suggestion> listSuggestion=new ArrayList<Suggestion>();
+    SuggestionAdapter mSuggestionAdapter;
     int f;
     boolean submitClicked=false;
     MessagesListAdapter<Message> adapter;
     TextWatcher textListener = null;
     EditText inputEdit;
     ImageButton inputButton;
+    boolean permitTyping=false;
+    String typingText="Suggestion from AI";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -91,15 +105,52 @@ public class ChatActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         setUpListener();
         setMessageList();
+        setUpSuggestion();
 
 
 
 
     }
 
+    private void setUpSuggestion() {
+        Suggestion s1=new Suggestion();
+        s1.setText("suggestion from ai1");
+        s1.setId(1);
+        listSuggestion.add(s1);
+        Suggestion s2=new Suggestion();
+        s2.setId(2);
+        s2.setText("suggestion from ai");
+        listSuggestion.add(s2);
+        listSuggestion.add(s2);
+        listSuggestion.add(s2);
+        mSuggestionAdapter=new SuggestionAdapter(listSuggestion);
+        RecyclerView.LayoutManager mLayoutManager=new LinearLayoutManager(getApplicationContext(),LinearLayoutManager.HORIZONTAL,true);
+        suggestionView.setItemAnimator(new DefaultItemAnimator());
+        suggestionView.setLayoutManager(mLayoutManager);
+        suggestionView.addOnItemTouchListener(new RecyclerTouchListener(getApplicationContext(), suggestionView ,new RecyclerTouchListener.OnItemClickListener() {
+            @Override public void onItemClick(View view, int position) {
+                permitTyping=true;
+                Suggestion s= listSuggestion.get(position);
+                //Toast.makeText(ChatActivity.this, s.getText()+"", Toast.LENGTH_SHORT).show();
+                typingLayout.setVisibility(View.VISIBLE);
+                openKeyboard(inputView.getInputEditText());
+                suggestionLayout.setVisibility(View.GONE);
+                typingText=s.getText();
+
+            }
+
+            @Override public void onLongItemClick(View view, int position) {
+
+            }
+        }));
+        suggestionView.setAdapter(mSuggestionAdapter);
+        suggestionView.scrollToPosition(listSuggestion.size()-1);
+
+
+    }
+
     private void setUpListener() {
 
-        final String s1="Hi,who are u I am very Hungry";
         f=0;
 
         inputEdit=inputView.getInputEditText();
@@ -132,8 +183,8 @@ public class ChatActivity extends AppCompatActivity {
                     submitClicked=false;
 
                 }
-                else if(f<s1.length()) {
-                    inputEdit.setText(s1.subSequence(0, f));
+                else if(f<typingText.length()) {
+                    inputEdit.setText(typingText.subSequence(0, f));
                     inputEdit.setSelection(f);
                     inputButton.setEnabled(false);
 
@@ -141,12 +192,12 @@ public class ChatActivity extends AppCompatActivity {
                 else
                 {
                     inputButton.setEnabled(true);
-                    inputEdit.setText(s1);
-                    inputEdit.setSelection(s1.length());
+                    inputEdit.setText(typingText);
+                    inputEdit.setSelection(typingText.length());
                 }
                     inputEdit.addTextChangedListener(textListener);
                 f++;
-                if(f==s1.length())
+                if(f==typingText.length())
                     inputButton.setEnabled(true);
 
                 //playSound(R.raw.train);
@@ -165,8 +216,10 @@ public class ChatActivity extends AppCompatActivity {
 
 
                 submitClicked=false;
-                typingLayout.setVisibility(View.VISIBLE);
-                openKeyboard(inputView.getInputEditText());
+                if(permitTyping) {
+                    typingLayout.setVisibility(View.VISIBLE);
+                    openKeyboard(inputView.getInputEditText());
+                }
                 return true;
             }
 
@@ -248,11 +301,25 @@ public class ChatActivity extends AppCompatActivity {
 
                 oStatusMessage.getUser().setAvatar(IC_AI);
                 adapter.updateElement(oStatusMessage,0);
-
-
                 playSound(R.raw.sound1);
+                showSuggestion();
             }
         }, DELAY_READ);
+
+    }
+
+    public void showSuggestion()
+    {
+        new Handler().postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+
+                suggestionLayout.setVisibility(View.VISIBLE);
+                permitTyping=false;
+            }
+        }, 1000);
+
 
     }
     public void openKeyboard(EditText et)
