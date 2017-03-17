@@ -4,10 +4,13 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Handler;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -31,6 +34,7 @@ import android.widget.Toast;
 import com.example.khome.storygame.ChatClasses.Author;
 import com.example.khome.storygame.ChatClasses.Message;
 import com.example.khome.storygame.R;
+import com.squareup.picasso.Downloader;
 import com.squareup.picasso.Picasso;
 import com.stfalcon.chatkit.commons.ImageLoader;
 import com.stfalcon.chatkit.commons.models.IMessage;
@@ -39,6 +43,7 @@ import com.stfalcon.chatkit.messages.MessageInput;
 import com.stfalcon.chatkit.messages.MessagesList;
 import com.stfalcon.chatkit.messages.MessagesListAdapter;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -60,9 +65,11 @@ public class ChatActivity extends AppCompatActivity {
     @BindView(R.id.typingDisplay)
     LinearLayout typingLayout;
 
-    static String IC_READ="file:///android_asset/ic_read.png";
+    static String IC_REACHED="file:///android_asset/ic_reached.png";
     static String IC_SENT="file:///android_asset/ic_sent.png";
     static String IC_AI="file:///android_asset/ic_user_man.png";
+    static  int DELAY_REACHED=1500;
+    static  int DELAY_READ=1500;
     List<Message> m;
     Message oStatusMessage=null;
     int f;
@@ -115,6 +122,10 @@ public class ChatActivity extends AppCompatActivity {
             public void beforeTextChanged(CharSequence s,int start,int count, int after){}
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 inputEdit.removeTextChangedListener(textListener);
+                AudioManager am = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+                float vol = 1.0f; //This will be half of the default system sound
+                am.playSoundEffect(AudioManager.FX_KEY_CLICK, vol);
+                //playSound(R.raw.sound1);
                 if(submitClicked==true)
                 {
                     inputButton.setEnabled(false);
@@ -139,6 +150,8 @@ public class ChatActivity extends AppCompatActivity {
                     inputButton.setEnabled(true);
 
                 //playSound(R.raw.train);
+
+                //playSound(R.raw.sound1);
 
             }
         };
@@ -188,24 +201,58 @@ public class ChatActivity extends AppCompatActivity {
 
 
                 adapter.addToStart(m, true);
-                //oStatusMessage.getUser().setAvatar(null);
-                if(oStatusMessage!=null) {
-                    adapter.update(oStatusMessage);
+                //playSound(R.raw.sound1);
+
+                try {
+                    oStatusMessage.getUser().setAvatar(null);
+                    adapter.updateElement(oStatusMessage, 1);
+                    oStatusMessage=m;
+                   changeReachedStatus();
 
                 }
+                catch (Exception e)
+                {
 
-/*
-                messageStatus.setVisibility(View.VISIBLE);
-                messageStatus.setImageDrawable(ContextCompat.getDrawable(ChatActivity.this,R.drawable.ic_reached));
-
-                messageStatus.setImageDrawable(ContextCompat.getDrawable(ChatActivity.this,R.drawable.ic_read));
-
-*/
+                }
 
                 return true;
             }
         });
 
+
+    }
+    public void changeReachedStatus()
+    {
+
+
+        new Handler().postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+
+                oStatusMessage.getUser().setAvatar(IC_REACHED);
+                adapter.updateElement(oStatusMessage,0);
+
+                playSound(R.raw.sound1);
+                changeReadStatus();
+            }
+        }, DELAY_REACHED);
+
+    }
+    public void changeReadStatus()
+    {
+        new Handler().postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+
+                oStatusMessage.getUser().setAvatar(IC_AI);
+                adapter.updateElement(oStatusMessage,0);
+
+
+                playSound(R.raw.sound1);
+            }
+        }, DELAY_READ);
 
     }
     public void openKeyboard(EditText et)
@@ -256,7 +303,7 @@ public class ChatActivity extends AppCompatActivity {
         Author a2= new Author();
         a2.setId("1");
         a2.setName("kaushal");
-        a2.setAvatar(IC_READ);
+        a2.setAvatar(IC_AI);
         m2.setAuthor(a2);
         adapter.addToStart(m2,true);
 
@@ -264,6 +311,51 @@ public class ChatActivity extends AppCompatActivity {
 
     }
 
+    private class ChangeStautsTask extends AsyncTask<Void, Void, Void> {
+        protected Void doInBackground(Void... urls) {
+
+
+
+
+            return null;
+
+        }
+
+        protected void onProgressUpdate(Integer... progress) {
+
+        }
+
+        protected void onPostExecute(Long result) {
+
+        }
+    }
+
+    public void delayHandle(int time)
+    {
+
+        new Handler().postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+
+                return ;
+                }
+        }, time);
+
+    }
+    public void delay(int time)
+    {
+        final  int i=time;
+        new Thread() {
+            public void run() {
+                try {
+                    sleep(i);
+                } catch (Exception e) {
+                    e.printStackTrace( );
+                }
+            }
+        }.start();
+    }
     ImageLoader imageLoader = new ImageLoader() {
         @Override
         public void loadImage(ImageView imageView, String url) {
