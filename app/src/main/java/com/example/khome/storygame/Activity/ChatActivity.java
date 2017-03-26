@@ -2,18 +2,19 @@ package com.example.khome.storygame.Activity;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Handler;
-import android.provider.Settings;
+import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -24,7 +25,6 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.method.KeyListener;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -38,27 +38,25 @@ import com.example.khome.storygame.Adapter.RecyclerTouchListener;
 import com.example.khome.storygame.Adapter.SuggestionAdapter;
 import com.example.khome.storygame.ChatClasses.Author;
 import com.example.khome.storygame.ChatClasses.Message;
+import com.example.khome.storygame.ChatClasses.MessageWrapper;
 import com.example.khome.storygame.ChatClasses.Suggestion;
+import com.example.khome.storygame.Fragment.SuggestionDialogFragment;
+import com.example.khome.storygame.Handler.RetrievalDatabaseHandler;
 import com.example.khome.storygame.R;
-import com.squareup.picasso.Downloader;
+import com.example.khome.storygame.Tools.SharedPreference;
 import com.squareup.picasso.Picasso;
 import com.stfalcon.chatkit.commons.ImageLoader;
-import com.stfalcon.chatkit.commons.models.IMessage;
-import com.stfalcon.chatkit.commons.models.IUser;
 import com.stfalcon.chatkit.messages.MessageInput;
 import com.stfalcon.chatkit.messages.MessagesList;
 import com.stfalcon.chatkit.messages.MessagesListAdapter;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-
-import static android.R.id.input;
-import static android.R.id.message;
 
 public class ChatActivity extends AppCompatActivity {
 
@@ -70,28 +68,37 @@ public class ChatActivity extends AppCompatActivity {
     Toolbar toolbar;
     @BindView(R.id.typingDisplay)
     LinearLayout typingLayout;
-    @BindView(R.id.suggestion_list)
+    /*@BindView(R.id.suggestion_list)
     RecyclerView suggestionView;
     @BindView(R.id.suggestionDisplay)
-    LinearLayout suggestionLayout;
+    LinearLayout suggestionLayout;*/
 
     static String IC_REACHED="file:///android_asset/ic_reached.png";
     static String IC_SENT="file:///android_asset/ic_sent.png";
     static String IC_AI="file:///android_asset/ic_user_man.png";
     static  int DELAY_REACHED=1500;
     static  int DELAY_READ=1500;
-    List<Message> m;
+    ArrayList<Message> m;
     Message oStatusMessage=null;
     List<Suggestion> listSuggestion=new ArrayList<Suggestion>();
     SuggestionAdapter mSuggestionAdapter;
     int f;
+    boolean suggestionshow=true;
     boolean submitClicked=false;
     MessagesListAdapter<Message> adapter;
     TextWatcher textListener = null;
     EditText inputEdit;
     ImageButton inputButton;
     boolean permitTyping=false;
+    boolean permitSuggestion=false;
+    EditText et;
+
     String typingText="Suggestion from AI";
+    RetrievalDatabaseHandler myDatabase;
+    Message currentMessageWrapper;
+    SuggestionDialogFragment newFragment;
+    ArrayList<MessageWrapper> universalSuggestion;
+    int selectedIndex;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -99,76 +106,155 @@ public class ChatActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
 
+
         setSupportActionBar(toolbar);
         //getSupportActionBar().setTitle("KDPGame");
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+
+        getPermission();
+        setUpSharedPreference();
         setUpListener();
-        setMessageList();
-        setUpSuggestion();
+        //setUpGlobalParameters();
+        if(SharedPreference.getCurrentPosition(getApplicationContext())==1)
+        {
+            startIntroductoryDialog();
 
+        }
+        else {
+            setMessageList();
+        }
+        //setUpSuggestion();
+
+
+
+
+        int permissionCheck = ContextCompat.checkSelfPermission(ChatActivity.this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if(permissionCheck==PackageManager.PERMISSION_GRANTED) {
+            try {
+            /*DatabaseHandler db = new DatabaseHandler(this);
+            Message m = new Message();
+            m.setId("2");
+            m.setText("hi hw r u");
+
+            db.addMessage(m);
+            */
+
+                MessageWrapper mlist = myDatabase.getMessageNode(1);
+
+                ArrayList<MessageWrapper> mw=myDatabase.getNextMessageNodes("5|6|7");
+
+                Log.e("database", mlist.getNextNode() + " "+mlist.getSubText());
+                Log.e("database2", mw.size() + " ");
+            } catch (Exception e) {
+
+
+            }
+
+        }
+        else
+        {
+            Toast.makeText(this, "N0 Permission", Toast.LENGTH_SHORT).show();
+
+        }
+
+
+    }
+
+    private void showFirstTime() {
+
+        try {
+            String s="bot";
+            MessageWrapper m = myDatabase.getMessageNode(1);
+            if(m.getType().equals(s))
+            {
+
+                oStatusMessage=null;
+                adapter = new MessagesListAdapter<>("1",imageLoader);
+                messagesList.setAdapter(adapter);
+                startBotTyping(m);
+            }
+
+
+        }
+        catch (Exception e)
+        {
+
+        }
+
+        //permitSuggestion=true;
+    }
+
+    private void setUpParameters(MessageWrapper m) {
+
+
+        universalSuggestion=myDatabase.getNextMessageNodes(m.getNextNode());
+        String s2="bot";
+
+        if(universalSuggestion.get(0).getType().equals(s2))
+        {
+            startBotTyping(universalSuggestion.get(0));
+
+        }
+        else
+        {
+            for (int i=0;i<universalSuggestion.size();i++)
+            {
+                Date d=new Date();
+                    universalSuggestion.get(i).getMessage().getUser().setAvatar(IC_SENT);
+                    universalSuggestion.get(i).getMessage().getUser().setName("kaushal");
+                    universalSuggestion.get(i).getMessage().setCreatedAt(d);
+
+
+
+            }
+
+            permitSuggestion=true;
+
+
+        }
 
 
 
     }
 
-    private void setUpSuggestion() {
-        Suggestion s1=new Suggestion();
-        s1.setText("suggestion from ai1");
-        s1.setId(1);
-        listSuggestion.add(s1);
-        Suggestion s2=new Suggestion();
-        s2.setId(2);
-        s2.setText("suggestion from ai");
-        listSuggestion.add(s2);
-        listSuggestion.add(s2);
-        listSuggestion.add(s2);
-        mSuggestionAdapter=new SuggestionAdapter(listSuggestion);
-        RecyclerView.LayoutManager mLayoutManager=new LinearLayoutManager(getApplicationContext(),LinearLayoutManager.HORIZONTAL,true);
-        suggestionView.setItemAnimator(new DefaultItemAnimator());
-        suggestionView.setLayoutManager(mLayoutManager);
-        suggestionView.addOnItemTouchListener(new RecyclerTouchListener(getApplicationContext(), suggestionView ,new RecyclerTouchListener.OnItemClickListener() {
-            @Override public void onItemClick(View view, int position) {
-                permitTyping=true;
-                Suggestion s= listSuggestion.get(position);
-                //Toast.makeText(ChatActivity.this, s.getText()+"", Toast.LENGTH_SHORT).show();
-                typingLayout.setVisibility(View.VISIBLE);
-                openKeyboard(inputView.getInputEditText());
-                suggestionLayout.setVisibility(View.GONE);
-                typingText=s.getText();
+    private void setUpSharedPreference() {
 
-            }
+        SharedPreferences wmbPreference = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean isFirstRun = wmbPreference.getBoolean("FIRSTRUN", true);
 
-            @Override public void onLongItemClick(View view, int position) {
-
-            }
-        }));
-        suggestionView.setAdapter(mSuggestionAdapter);
-        suggestionView.scrollToPosition(listSuggestion.size()-1);
+        if (isFirstRun)
+        {
+            SharedPreference.putCurrentPosition(getApplicationContext(),1);
+            SharedPreferences.Editor editor = wmbPreference.edit();
+            editor.putBoolean("FIRSTRUN", false);
+            editor.commit();
+        }
 
 
     }
+
+
+
+
 
     private void setUpListener() {
 
         f=0;
+        suggestionshow=true;
+        permitTyping=false;
+        myDatabase = new RetrievalDatabaseHandler(ChatActivity.this);
+        universalSuggestion=new ArrayList<MessageWrapper>();
+
+
 
         inputEdit=inputView.getInputEditText();
         inputButton=inputView.getButton();
-
-
         textListener = new TextWatcher() {
             public void afterTextChanged(Editable s){
-                //inputEdit.setSelection(2);
-                /*if(f<s1.length())
-                {
-                    inputEdit.setSelection(f+1);
-                }
-                else
-                {
-                    inputEdit.setSelection(s1.length());
 
-                }*/
             }
             public void beforeTextChanged(CharSequence s,int start,int count, int after){}
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -200,9 +286,6 @@ public class ChatActivity extends AppCompatActivity {
                 if(f==typingText.length())
                     inputButton.setEnabled(true);
 
-                //playSound(R.raw.train);
-
-                //playSound(R.raw.sound1);
 
             }
         };
@@ -212,13 +295,27 @@ public class ChatActivity extends AppCompatActivity {
         inputEdit.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                //Toast.makeText(ChatActivity.this, "Hikasdf", Toast.LENGTH_SHORT).show();
-
 
                 submitClicked=false;
-                if(permitTyping) {
-                    typingLayout.setVisibility(View.VISIBLE);
-                    openKeyboard(inputView.getInputEditText());
+
+
+                if(permitSuggestion) {
+
+                    if(universalSuggestion.size()>1) {
+                        if (suggestionshow) {
+                            showSuggestionDialog();
+                            et=inputView.getInputEditText();
+                            //typingLayout.setVisibility(View.VISIBLE);
+
+                            //openKeyboard(inputView.getInputEditText());
+                        }
+                    }
+                    else
+                    {
+                        typingText=universalSuggestion.get(0).getMessage().getText();
+                        suggestionshow=true;
+                        openKeyboard(inputView.getInputEditText());
+                    }
                 }
                 return true;
             }
@@ -230,36 +327,52 @@ public class ChatActivity extends AppCompatActivity {
         inputView.setInputListener(new MessageInput.InputListener() {
             @Override
             public boolean onSubmit(CharSequence input) {
-                //Toast.makeText(ChatActivity.this, ""+inputEdit.getText(), Toast.LENGTH_SHORT).show();
 
+                permitSuggestion=false;
+                permitTyping=false;
+                typingLayout.setVisibility(View.INVISIBLE);
 
                 InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(inputEdit.getWindowToken(), 0);
                 inputEdit.setText("");
-                typingLayout.setVisibility(View.GONE);
+                //typingLayout.setVisibility(View.GONE);
                 submitClicked=true;
                 f=0;
 
-
-                Date d=new Date();
-                Message m=new Message();
-                m.setText(input+"");
-                m.setCreatedAt(d);
-
-                Author a= new Author();
-                a.setId("1");
-                a.setName("Kaushal");
+                Message m1=new Message();
+                m1.setCreatedAt(universalSuggestion.get(selectedIndex).getMessage().getCreatedAt());
+                m1.setId(universalSuggestion.get(selectedIndex).getMessage().getId());
+                m1.setText(universalSuggestion.get(selectedIndex).getMessage().getText());
+                Author a=new Author();
                 a.setAvatar(IC_SENT);
-                m.setAuthor(a);
+                a.setId(universalSuggestion.get(selectedIndex).getMessage().getUser().getId());
+                a.setName(universalSuggestion.get(selectedIndex).getMessage().getUser().getName());
+                m1.setAuthor(a);
 
+                adapter.addToStart(m1, true);
 
-                adapter.addToStart(m, true);
-                //playSound(R.raw.sound1);
+                Message m2=new Message();
+                m2.setCreatedAt(universalSuggestion.get(selectedIndex).getMessage().getCreatedAt());
+                m2.setId(universalSuggestion.get(selectedIndex).getMessage().getId());
+                m2.setText(universalSuggestion.get(selectedIndex).getMessage().getText());
+                Author a2=new Author();
+                a2.setAvatar(IC_SENT);
+                a2.setId(universalSuggestion.get(selectedIndex).getMessage().getUser().getId());
+                a2.setName(universalSuggestion.get(selectedIndex).getMessage().getUser().getName());
+                m2.setAuthor(a2);
 
                 try {
-                    oStatusMessage.getUser().setAvatar(null);
-                    adapter.updateElement(oStatusMessage, 1);
-                    oStatusMessage=m;
+                    if(oStatusMessage==null) {
+
+                    }
+                    else
+                    {
+                        oStatusMessage.getUser().setAvatar(null);
+                        adapter.updateElement(oStatusMessage, 2);
+
+
+                    }
+                    oStatusMessage=m2;
                    changeReachedStatus();
 
                 }
@@ -268,12 +381,43 @@ public class ChatActivity extends AppCompatActivity {
 
                 }
 
+
                 return true;
             }
         });
 
+        inputButton.setEnabled(false);
+
+
 
     }
+
+    private void showSuggestionDialog() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+         newFragment = new SuggestionDialogFragment();
+
+
+        newFragment.setRadioOption(universalSuggestion);
+        newFragment.show(fragmentManager, "dialog");
+
+        suggestionshow=false;
+
+
+    }
+
+    public void dialogDismiss(int i)
+    {
+
+        selectedIndex=i;
+        newFragment.dismiss();
+        typingText=universalSuggestion.get(i).getMessage().getText();
+        suggestionshow=true;
+        typingLayout.setVisibility(View.VISIBLE);
+        openKeyboard(inputView.getInputEditText());
+        //inputEdit.onTouchEvent(null);
+        //Toast.makeText(this, "Suggestion Selected "+i, Toast.LENGTH_SHORT).show();
+    }
+
     public void changeReachedStatus()
     {
 
@@ -285,7 +429,6 @@ public class ChatActivity extends AppCompatActivity {
 
                 oStatusMessage.getUser().setAvatar(IC_REACHED);
                 adapter.updateElement(oStatusMessage,0);
-
                 playSound(R.raw.sound1);
                 changeReadStatus();
             }
@@ -302,7 +445,8 @@ public class ChatActivity extends AppCompatActivity {
                 oStatusMessage.getUser().setAvatar(IC_AI);
                 adapter.updateElement(oStatusMessage,0);
                 playSound(R.raw.sound1);
-                showSuggestion();
+                setUpParameters(universalSuggestion.get(selectedIndex));
+                //showSuggestion();
             }
         }, DELAY_READ);
 
@@ -310,31 +454,52 @@ public class ChatActivity extends AppCompatActivity {
 
     public void showSuggestion()
     {
-        new Handler().postDelayed(new Runnable() {
-
-            @Override
-            public void run() {
-
-                suggestionLayout.setVisibility(View.VISIBLE);
-                permitTyping=false;
-            }
-        }, 1000);
 
 
     }
     public void openKeyboard(EditText et)
     {
 
+        permitTyping=true;
+        permitSuggestion=false;
+
         KeyListener originalKeyListener = et.getKeyListener();
         et.setKeyListener(originalKeyListener);
         et.requestFocus();
         InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.showSoftInput(et, InputMethodManager.SHOW_IMPLICIT);
+        imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
 
 
     }
 
+    public void startBotTyping(MessageWrapper m)
+    {
+        Message m1=new Message();
+        Date date = new Date();
+
+        m1.setId(m.getMessage().getId());
+        m1.setText(m.getMessage().getText());
+        m1.setCreatedAt(date);
+
+        Author a= new Author();
+        a.setId(2+"");
+        a.setName(" kak");
+        a.setAvatar(IC_AI);
+        m1.setAuthor(a);
+
+        adapter.addToStart(m1,true);
+        //setMessageList();
+        setUpParameters(m);
+
+    }
+
     private void setMessageList() {
+
+
+
+
+
+        //setUpParameters();
 
         m=new ArrayList<Message>();
 
@@ -374,8 +539,30 @@ public class ChatActivity extends AppCompatActivity {
         m2.setAuthor(a2);
         adapter.addToStart(m2,true);
 
-        oStatusMessage=m2;
+        //oStatusMessage=m2;
 
+    }
+
+    private void startIntroductoryDialog() {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(ChatActivity.this);
+// Add the buttons
+
+        builder.setMessage("Welcome this is a story game")
+                .setTitle("Story Game");
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+
+                showFirstTime();
+
+            }
+        });
+
+
+
+        AlertDialog dialog = builder.create();
+        dialog.setCancelable(false);
+        dialog.show();
     }
 
     private class ChangeStautsTask extends AsyncTask<Void, Void, Void> {
@@ -442,4 +629,64 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
+    private void getPermission() {
+
+        if (ContextCompat.checkSelfPermission(ChatActivity.this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(ChatActivity.this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+
+            } else {
+
+                // No explanation needed, we can request the permission.
+
+                ActivityCompat.requestPermissions(ChatActivity.this,
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        2);
+
+                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+                // app-defined int constant. The callback method gets the
+                // result of the request.
+            }
+        }
+
+    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case 2: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+    }
 }

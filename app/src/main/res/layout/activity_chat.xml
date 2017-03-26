@@ -94,21 +94,7 @@
                     />
             </LinearLayout>
 
-            <LinearLayout
-                android:id="@+id/suggestionDisplay"
-                android:orientation="vertical"
-                android:background="@color/white"
-                android:layout_width="match_parent"
-                android:layout_height="45dp">
 
-                <android.support.v7.widget.RecyclerView
-                    android:id="@+id/suggestion_list"
-                    android:layout_gravity="center_vertical|left"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:scrollbars="none" />
-
-            </LinearLayout>
             <com.stfalcon.chatkit.messages.MessageInput
                 android:id="@+id/input"
                 android:layout_width="match_parent"

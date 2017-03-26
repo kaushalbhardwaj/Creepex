@@ -39,6 +39,8 @@ dependencies {
     compile 'com.android.support:support-v4:25.2.0'
     compile 'com.android.support:appcompat-v7:25.2.0'
     compile 'com.google.android:flexbox:0.2.5'
+    compile 'io.github.rockerhieu:emojicon:1.4.2'
+    compile 'com.readystatesoftware.sqliteasset:sqliteassethelper:+'
     compile(name:'chatkit', ext:'aar')
 
 }
