@@ -4,6 +4,7 @@ package com.example.khome.storygame.Handler;
  * Created by khome on 25/3/17.
  */
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -15,6 +16,7 @@ import com.example.khome.storygame.ChatClasses.MessageWrapper;
 import com.readystatesoftware.sqliteasset.SQLiteAssetHelper;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 public class RetrievalDatabaseHandler extends SQLiteAssetHelper {
 
@@ -27,6 +29,9 @@ public class RetrievalDatabaseHandler extends SQLiteAssetHelper {
     private static final String TYPE="type";
     private static final String NEXTNODE="nextnode";
     private static final String RETRIEVAL_TABLE="chat3";
+    private static final String HISTORY_TABLE="history";
+    private static final String DATE="date";
+
 
     public RetrievalDatabaseHandler(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -90,6 +95,46 @@ public class RetrievalDatabaseHandler extends SQLiteAssetHelper {
         }
         return nextList;
     }
+
+    public void putHistoryNode(MessageWrapper mw)
+    {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+
+        //values.put(ID, Integer.parseInt(mw.getMessage().getId()));
+        values.put(TEXT,mw.getMessage().getText());
+        values.put(AUTHORID,mw.getMessage().getUser().getId());
+        values.put(TYPE,mw.getType());
+        values.put(DATE,mw.getMessage().getCreatedAt().toString());
+
+
+        // Inserting Row
+        db.insert(HISTORY_TABLE, null, values);
+        Log.e("history database","inserted");
+        db.close();
+    }
+
+    public ArrayList<Message> getHistoryMessages()
+    {
+        SQLiteDatabase db=getWritableDatabase();
+        String[] columns={ID, TEXT,AUTHORID,TYPE,DATE};
+        Cursor cursor=db.query(RetrievalDatabaseHandler.HISTORY_TABLE, columns, null, null, null, null, null);
+        ArrayList<Message> historyList=new ArrayList<Message>();
+
+        while(cursor.moveToNext()){
+            Message m=new Message();
+            Author a1=new Author();
+            m.setId(cursor.getString(0));
+            m.setText(cursor.getString(1));
+            a1.setId(cursor.getString(2));
+            m.setAuthor(a1);
+            m.setCreatedAt(new Date(cursor.getString(4)));
+            historyList.add(m);
+        }
+        return historyList;
+
+    }
+
 
     /*public ArrayList<Message> getPoses(){
         SQLiteDatabase db=getWritableDatabase();

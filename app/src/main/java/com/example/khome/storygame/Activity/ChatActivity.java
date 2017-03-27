@@ -98,6 +98,7 @@ public class ChatActivity extends AppCompatActivity {
     Message currentMessageWrapper;
     SuggestionDialogFragment newFragment;
     ArrayList<MessageWrapper> universalSuggestion;
+    ArrayList<Message> historyList;
     int selectedIndex;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,6 +125,7 @@ public class ChatActivity extends AppCompatActivity {
         }
         else {
             setMessageList();
+
         }
         //setUpSuggestion();
 
@@ -133,26 +135,31 @@ public class ChatActivity extends AppCompatActivity {
         int permissionCheck = ContextCompat.checkSelfPermission(ChatActivity.this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE);
         if(permissionCheck==PackageManager.PERMISSION_GRANTED) {
-            try {
-            /*DatabaseHandler db = new DatabaseHandler(this);
+            /*try {
             Message m = new Message();
-            m.setId("2");
+            m.setId("3");
             m.setText("hi hw r u");
+            Author a=new Author();
+                a.setId("2");
+                m.setCreatedAt(new Date());
+                m.setAuthor(a);
 
-            db.addMessage(m);
-            */
 
-                MessageWrapper mlist = myDatabase.getMessageNode(1);
+                //MessageWrapper mlist = myDatabase.getMessageNode(1);
 
-                ArrayList<MessageWrapper> mw=myDatabase.getNextMessageNodes("5|6|7");
+                //ArrayList<MessageWrapper> mw=myDatabase.getNextMessageNodes("5|6|7");
 
-                Log.e("database", mlist.getNextNode() + " "+mlist.getSubText());
-                Log.e("database2", mw.size() + " ");
+                MessageWrapper mw=new MessageWrapper();
+                mw.setType("bot");
+                mw.setMessage(m);
+                myDatabase.putHistoryNode(mw);
+                //Log.e("database", mlist.getNextNode() + " "+mlist.getSubText());
+                //Log.e("database2", mw.size() + " ");
             } catch (Exception e) {
 
 
             }
-
+*/
         }
         else
         {
@@ -349,7 +356,14 @@ public class ChatActivity extends AppCompatActivity {
                 a.setName(universalSuggestion.get(selectedIndex).getMessage().getUser().getName());
                 m1.setAuthor(a);
 
+                MessageWrapper mw=new MessageWrapper();
+                mw.setMessage(m1);
+                mw.setType("user");
+
                 adapter.addToStart(m1, true);
+                myDatabase.putHistoryNode(mw);
+
+                SharedPreference.putCurrentPosition(getApplicationContext(),Integer.parseInt(m1.getId()));
 
                 Message m2=new Message();
                 m2.setCreatedAt(universalSuggestion.get(selectedIndex).getMessage().getCreatedAt());
@@ -482,12 +496,18 @@ public class ChatActivity extends AppCompatActivity {
         m1.setCreatedAt(date);
 
         Author a= new Author();
-        a.setId(2+"");
+        a.setId(m.getMessage().getUser().getId()+"");
         a.setName(" kak");
         a.setAvatar(IC_AI);
         m1.setAuthor(a);
+        MessageWrapper mw=new MessageWrapper();
+        mw.setMessage(m1);
+        mw.setType("bot");
 
         adapter.addToStart(m1,true);
+        myDatabase.putHistoryNode(mw);
+
+        SharedPreference.putCurrentPosition(getApplicationContext(),Integer.parseInt(m1.getId()));
         //setMessageList();
         setUpParameters(m);
 
@@ -496,12 +516,23 @@ public class ChatActivity extends AppCompatActivity {
     private void setMessageList() {
 
 
+        oStatusMessage=null;
+        adapter = new MessagesListAdapter<>("1",imageLoader);
+        messagesList.setAdapter(adapter);
+
+        getHistoryList();
+
+        adapter.addToEnd(historyList, true);
+
+        MessageWrapper mw = myDatabase.getMessageNode(SharedPreference.getCurrentPosition(getApplicationContext()));
+
+        setUpParameters(mw);
 
 
 
         //setUpParameters();
 
-        m=new ArrayList<Message>();
+       /* m=new ArrayList<Message>();
 
         adapter = new MessagesListAdapter<>("1",imageLoader);
         Date date = new Date();
@@ -537,9 +568,35 @@ public class ChatActivity extends AppCompatActivity {
         a2.setName("kaushal");
         a2.setAvatar(IC_AI);
         m2.setAuthor(a2);
-        adapter.addToStart(m2,true);
+        adapter.addToStart(m2,true);*/
 
         //oStatusMessage=m2;
+
+    }
+
+    private void getHistoryList() {
+        historyList=myDatabase.getHistoryMessages();
+
+        String s="1";
+        for(int i=0;i<historyList.size();i++)
+        {
+            if(historyList.get(i).getUser().getId().equals("1"))
+            {
+
+
+                historyList.get(i).getUser().setAvatar(null);
+                historyList.get(i).getUser().setName("asdf");
+            }
+
+            else {
+
+                historyList.get(i).getUser().setAvatar(IC_AI);
+                historyList.get(i).getUser().setName("bot");
+
+            }
+
+        }
+
 
     }
 
