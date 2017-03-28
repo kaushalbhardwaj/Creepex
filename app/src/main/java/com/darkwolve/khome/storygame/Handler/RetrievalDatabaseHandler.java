@@ -19,10 +19,8 @@ import com.readystatesoftware.sqliteasset.SQLiteAssetHelper;
 import java.util.ArrayList;
 import java.util.Date;
 
-import proguard.annotation.KeepClassMembers;
 
-@Keep
-@KeepClassMembers
+
 public class RetrievalDatabaseHandler extends SQLiteAssetHelper {
 
     private static final String DATABASE_NAME = "storygame.sqlite";

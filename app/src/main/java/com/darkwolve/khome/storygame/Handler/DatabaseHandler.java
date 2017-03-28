@@ -15,11 +15,9 @@ import com.darkwolve.khome.storygame.ChatClasses.Message;
 import java.util.ArrayList;
 import java.util.List;
 
-import proguard.annotation.Keep;
-import proguard.annotation.KeepClassMembers;
 
-@Keep
-@KeepClassMembers
+
+
 public class DatabaseHandler extends SQLiteOpenHelper {
 
     // All Static variables

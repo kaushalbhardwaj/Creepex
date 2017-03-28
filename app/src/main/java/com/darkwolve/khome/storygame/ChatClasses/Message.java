@@ -6,14 +6,12 @@ import com.stfalcon.chatkit.commons.models.IMessage;
 
 import java.util.Date;
 
-import proguard.annotation.KeepClassMembers;
 
 /**
  * Created by khome on 22/2/17.
  */
 
-@Keep
-@KeepClassMembers
+
 public class Message implements IMessage {
     String id,text;
     Author author;

@@ -1,14 +1,11 @@
 package com.darkwolve.khome.storygame.ChatClasses;
 
-import proguard.annotation.Keep;
-import proguard.annotation.KeepClassMembers;
+
 
 /**
  * Created by khome on 26/3/17.
  */
 
-@Keep
-@KeepClassMembers
 
 public class MessageWrapper {
 

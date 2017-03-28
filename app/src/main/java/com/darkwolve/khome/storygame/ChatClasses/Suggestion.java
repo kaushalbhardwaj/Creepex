@@ -1,15 +1,12 @@
 package com.darkwolve.khome.storygame.ChatClasses;
 
-import android.support.annotation.Keep;
 
-import proguard.annotation.KeepClassMembers;
 
 /**
  * Created by khome on 17/3/17.
  */
 
-@Keep
-@KeepClassMembers
+
 public class Suggestion {
     String text;
     int id;

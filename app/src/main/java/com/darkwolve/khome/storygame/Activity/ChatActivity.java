@@ -2,7 +2,6 @@ package com.darkwolve.khome.storygame.Activity;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -15,7 +14,6 @@ import android.support.annotation.Keep;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -33,7 +31,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import com.darkwolve.khome.storygame.Adapter.SuggestionAdapter;
 import com.darkwolve.khome.storygame.ChatClasses.Author;
 import com.darkwolve.khome.storygame.ChatClasses.Message;
 import com.darkwolve.khome.storygame.ChatClasses.MessageWrapper;
@@ -54,10 +51,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import proguard.annotation.KeepClassMembers;
 
-@Keep
-@KeepClassMembers
 public class ChatActivity extends AppCompatActivity {
 
     @BindView(R.id.messagesList)
@@ -81,7 +75,6 @@ public class ChatActivity extends AppCompatActivity {
     ArrayList<Message> m;
     Message oStatusMessage=null;
     List<Suggestion> listSuggestion=new ArrayList<Suggestion>();
-    SuggestionAdapter mSuggestionAdapter;
     int f;
     boolean suggestionshow=true;
     boolean submitClicked=false;
@@ -116,7 +109,7 @@ public class ChatActivity extends AppCompatActivity {
 
 
 
-        getPermission();
+        //getPermission();
         setUpSharedPreference();
         setUpListener();
         //setUpGlobalParameters();
@@ -133,10 +126,10 @@ public class ChatActivity extends AppCompatActivity {
 
 
 
-
+/*
         int permissionCheck = ContextCompat.checkSelfPermission(ChatActivity.this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        if(permissionCheck==PackageManager.PERMISSION_GRANTED) {
+        if(permissionCheck==PackageManager.PERMISSION_GRANTED) {*/
             /*try {
             Message m = new Message();
             m.setId("3");
@@ -145,30 +138,28 @@ public class ChatActivity extends AppCompatActivity {
                 a.setId("2");
                 m.setCreatedAt(new Date());
                 m.setAuthor(a);
-
+*/
 
                 //MessageWrapper mlist = myDatabase.getMessageNode(1);
 
                 //ArrayList<MessageWrapper> mw=myDatabase.getNextMessageNodes("5|6|7");
 
-                MessageWrapper mw=new MessageWrapper();
-                mw.setType("bot");
-                mw.setMessage(m);
+        /*
                 myDatabase.putHistoryNode(mw);
                 //Log.e("database", mlist.getNextNode() + " "+mlist.getSubText());
                 //Log.e("database2", mw.size() + " ");
             } catch (Exception e) {
 
 
-            }
-*/
-        }
+            }*/
+
+ /*       }
         else
         {
             Toast.makeText(this, "N0 Permission", Toast.LENGTH_SHORT).show();
 
         }
-
+*/
 
     }
 

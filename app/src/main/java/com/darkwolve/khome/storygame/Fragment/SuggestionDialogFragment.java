@@ -17,15 +17,11 @@ import com.darkwolve.khome.storygame.R;
 import java.util.ArrayList;
 
 import butterknife.ButterKnife;
-import proguard.annotation.Keep;
-import proguard.annotation.KeepClassMembers;
 
 /**
  * Created by khome on 26/3/17.
  */
 
-@Keep
-@KeepClassMembers
 public class SuggestionDialogFragment extends DialogFragment {
 
     ArrayList<MessageWrapper> radioList;

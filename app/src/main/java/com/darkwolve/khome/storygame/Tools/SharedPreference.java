@@ -4,13 +4,11 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.annotation.Keep;
 
-import proguard.annotation.KeepClassMembers;
 
 /**
  * Created by khome on 26/3/17.
  */
-@Keep
-@KeepClassMembers
+
 public class SharedPreference {
     public static final String CurrentLocationPreference = "CurrentLocation" ;
     public static final String PositionKey = "positionKey";

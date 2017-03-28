@@ -2,15 +2,13 @@ package com.darkwolve.khome.storygame.ChatClasses;
 
 import com.stfalcon.chatkit.commons.models.IUser;
 
-import proguard.annotation.Keep;
-import proguard.annotation.KeepClassMembers;
+
 
 /**
  * Created by khome on 22/2/17.
  */
 
-@Keep
-@KeepClassMembers
+
 public class Author implements IUser {
 
     String id,name;
