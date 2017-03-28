@@ -1,19 +1,23 @@
 package com.darkwolve.khome.storygame.Activity;
 
 import android.Manifest;
+import android.app.ActionBar;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.annotation.Keep;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -24,6 +28,8 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -35,6 +41,7 @@ import com.darkwolve.khome.storygame.ChatClasses.Author;
 import com.darkwolve.khome.storygame.ChatClasses.Message;
 import com.darkwolve.khome.storygame.ChatClasses.MessageWrapper;
 import com.darkwolve.khome.storygame.ChatClasses.Suggestion;
+import com.darkwolve.khome.storygame.Fragment.PlayerNameDialogFragment;
 import com.darkwolve.khome.storygame.Fragment.SuggestionDialogFragment;
 import com.darkwolve.khome.storygame.Handler.RetrievalDatabaseHandler;
 import com.darkwolve.khome.storygame.R;
@@ -90,13 +97,26 @@ public class ChatActivity extends AppCompatActivity {
     RetrievalDatabaseHandler myDatabase;
     Message currentMessageWrapper;
     SuggestionDialogFragment newFragment;
+    PlayerNameDialogFragment pdf;
     ArrayList<MessageWrapper> universalSuggestion;
     ArrayList<Message> historyList;
     int selectedIndex;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        try {
+            requestWindowFeature(Window.FEATURE_NO_TITLE);
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        }
+        catch (Exception e)
+        {
+
+
+        }
         setContentView(R.layout.activity_chat);
+
         ButterKnife.bind(this);
 
 
@@ -104,8 +124,8 @@ public class ChatActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         //getSupportActionBar().setTitle("KDPGame");
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        //getSupportActionBar().setIcon(R.drawable.ic_man_user);
+        //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setIcon(R.drawable.ic_man_user);
 
 
 
@@ -113,6 +133,10 @@ public class ChatActivity extends AppCompatActivity {
         setUpSharedPreference();
         setUpListener();
         //setUpGlobalParameters();
+
+        startIntroductoryDialog();
+/*
+
         if(SharedPreference.getCurrentPosition(getApplicationContext())==1)
         {
             startIntroductoryDialog();
@@ -122,6 +146,7 @@ public class ChatActivity extends AppCompatActivity {
             setMessageList();
 
         }
+*/
         //setUpSuggestion();
 
 
@@ -163,9 +188,10 @@ public class ChatActivity extends AppCompatActivity {
 
     }
 
-    private void showFirstTime() {
+    public void showFirstTime() {
 
         try {
+            pdf.dismiss();
             String s="bot";
             MessageWrapper m = myDatabase.getMessageNode(1);
             if(m.getType().equals(s))
@@ -192,8 +218,15 @@ public class ChatActivity extends AppCompatActivity {
 
         universalSuggestion=myDatabase.getNextMessageNodes(m.getNextNode());
         String s2="bot";
+        String s3="end";
 
-        if(universalSuggestion.get(0).getType().equals(s2))
+        if(universalSuggestion.get(0).getType().equals(s3))
+        {
+            showLastTime(universalSuggestion.get(0));
+
+        }
+
+        else if(universalSuggestion.get(0).getType().equals(s2))
         {
             startBotTyping(universalSuggestion.get(0));
 
@@ -216,6 +249,54 @@ public class ChatActivity extends AppCompatActivity {
 
         }
 
+
+
+    }
+
+    private void showLastTime(MessageWrapper m) {
+
+
+        Message m1=new Message();
+        Date date = new Date();
+
+        m1.setId(m.getMessage().getId());
+        //m1.setText(m.getMessage().getText());
+        m1.setText(m.getMessage().getText());
+        m1.setCreatedAt(date);
+
+        Author a= new Author();
+        a.setId(m.getMessage().getUser().getId()+"");
+        a.setName("Annie96");
+        a.setAvatar(IC_AI);
+        m1.setAuthor(a);
+        MessageWrapper mw=new MessageWrapper();
+        mw.setMessage(m1);
+        mw.setType("bot");
+
+        adapter.addToStart(m1,true);
+        myDatabase.putHistoryNode(mw);
+
+        SharedPreference.putCurrentPosition(getApplicationContext(),1);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(ChatActivity.this);
+// Add the buttons
+
+        builder.setMessage("Thank you for playing the game hope you have enjoyed the game")
+                .setTitle("annie96 is typing...");
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+
+
+                finish();
+            }
+        });
+
+
+
+
+        AlertDialog dialog = builder.create();
+        dialog.setCancelable(false);
+        dialog.show();
 
 
     }
@@ -340,7 +421,7 @@ public class ChatActivity extends AppCompatActivity {
 
                 permitSuggestion=false;
                 permitTyping=false;
-                typingLayout.setVisibility(View.INVISIBLE);
+                //typingLayout.setVisibility(View.INVISIBLE);
 
                 InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(inputEdit.getWindowToken(), 0);
@@ -352,7 +433,8 @@ public class ChatActivity extends AppCompatActivity {
                 Message m1=new Message();
                 m1.setCreatedAt(universalSuggestion.get(selectedIndex).getMessage().getCreatedAt());
                 m1.setId(universalSuggestion.get(selectedIndex).getMessage().getId());
-                m1.setText(universalSuggestion.get(selectedIndex).getMessage().getText());
+                //m1.setText(universalSuggestion.get(selectedIndex).getMessage().getText());
+                m1.setText("This is a test message for checking the ui");
                 Author a=new Author();
                 a.setAvatar(IC_SENT);
                 a.setId(universalSuggestion.get(selectedIndex).getMessage().getUser().getId());
@@ -371,7 +453,9 @@ public class ChatActivity extends AppCompatActivity {
                 Message m2=new Message();
                 m2.setCreatedAt(universalSuggestion.get(selectedIndex).getMessage().getCreatedAt());
                 m2.setId(universalSuggestion.get(selectedIndex).getMessage().getId());
-                m2.setText(universalSuggestion.get(selectedIndex).getMessage().getText());
+                //m2.setText(universalSuggestion.get(selectedIndex).getMessage().getText());
+                m2.setText("This is a test message for checking the ui");
+
                 Author a2=new Author();
                 a2.setAvatar(IC_SENT);
                 a2.setId(universalSuggestion.get(selectedIndex).getMessage().getUser().getId());
@@ -437,7 +521,7 @@ public class ChatActivity extends AppCompatActivity {
         newFragment.dismiss();
         typingText=universalSuggestion.get(i).getMessage().getText();
         suggestionshow=true;
-        typingLayout.setVisibility(View.VISIBLE);
+       // typingLayout.setVisibility(View.VISIBLE);
         openKeyboard(inputView.getInputEditText());
         //inputEdit.onTouchEvent(null);
         //Toast.makeText(this, "Suggestion Selected "+i, Toast.LENGTH_SHORT).show();
@@ -509,12 +593,13 @@ public class ChatActivity extends AppCompatActivity {
         Date date = new Date();
 
         m1.setId(m.getMessage().getId());
-        m1.setText(m.getMessage().getText());
+        //m1.setText(m.getMessage().getText());
+        m1.setText("This is a test message for checking the ui");
         m1.setCreatedAt(date);
 
         Author a= new Author();
         a.setId(m.getMessage().getUser().getId()+"");
-        a.setName(" kak");
+        a.setName("Annie96");
         a.setAvatar(IC_AI);
         m1.setAuthor(a);
         MessageWrapper mw=new MessageWrapper();
@@ -619,29 +704,44 @@ public class ChatActivity extends AppCompatActivity {
 
     private void startIntroductoryDialog() {
 
-        showFirstTime();
-/*
+        //showFirstTime();
+
 
 
         AlertDialog.Builder builder = new AlertDialog.Builder(ChatActivity.this);
 // Add the buttons
 
-        builder.setMessage("Welcome this is a story game")
-                .setTitle("Story Game");
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+        builder.setMessage("The creepiest chat you'll ever do.")
+                .setTitle("annie96 is typing...");
+        builder.setPositiveButton("PLAY", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
 
-                showFirstTime();
+                FragmentManager fragmentManager = getSupportFragmentManager();
+                 pdf = new PlayerNameDialogFragment();
 
+                pdf.setCancelable(false);
+                pdf.show(fragmentManager, "dialog");
+
+                //showFirstTime();
             }
         });
+
+        builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+
+                finish();
+
+                //showFirstTime();
+            }
+        });
+
 
 
 
         AlertDialog dialog = builder.create();
         dialog.setCancelable(false);
         dialog.show();
-*/
+
     }
 
     private class ChangeStautsTask extends AsyncTask<Void, Void, Void> {
@@ -744,8 +844,9 @@ public class ChatActivity extends AppCompatActivity {
             case android.R.id.home:
                 try {
 
-                    onBackPressed();
-
+                    /*Intent i=new Intent(ChatActivity.this,StorySelectionActivity.class);
+                    startActivity(i);
+                    finish();*/
                 }
                 catch (Exception e)
                 {

@@ -13,7 +13,8 @@
     </style>
 
     <style name="toolbar_theme" parent="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
-        <item name="colorControlNormal">#FFFFFF</item>
+        <item name="colorControlNormal">#fff</item>
+
     </style>
 
     <!-- Base application theme. -->

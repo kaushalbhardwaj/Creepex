@@ -16,8 +16,7 @@
 
         <LinearLayout
             android:orientation="vertical"
-
-            android:background="#424242"
+            android:background="#FFFAFAFA"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
@@ -26,6 +25,7 @@
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 app:titleTextColor="#ffffff"
+                android:elevation="6dp"
                 android:theme="@style/toolbar_theme"
                 android:background="?attr/colorPrimary"
                 android:layout_height="?attr/actionBarSize" >
@@ -33,13 +33,13 @@
 
                 <LinearLayout
                     android:orientation="vertical"
-                    android:layout_marginLeft="10dp"
+                    android:layout_marginLeft="30dp"
                     android:layout_marginTop="5dp"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
 
                     <TextView
-                        android:text="BotKDP"
+                        android:text="Annie96"
                         android:textColor="#ffffff"
                         android:textSize="18sp"
                         android:layout_width="match_parent"
@@ -48,7 +48,7 @@
 
                     <TextView
                         android:text="Online"
-                        android:textColor="#ffffff"
+                        android:textColor="#fff"
                         android:textSize="12sp"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -71,13 +71,25 @@
                 android:layout_weight="10"
                 app:outcomingTextSize="15sp"
                 app:incomingTextSize="15sp"
-                app:dateHeaderTextColor="#424242"
-                app:incomingTimeTextSize="12sp"
-                app:outcomingTimeTextSize="12sp"
-                app:incomingAvatarHeight="30dp"
-                app:outgoingStatusHeight="10dp"
-                app:outgoingStatusWidth="10dp"
-                app:incomingAvatarWidth="30dp"
+                app:incomingBubblePaddingTop="6dp"
+                app:incomingBubblePaddingBottom="8dp"
+                app:incomingBubblePaddingLeft="11dp"
+                app:incomingBubblePaddingRight="11dp"
+                app:dateHeaderTextSize="15sp"
+                app:dateHeaderTextColor="#777777"
+                app:incomingTimeTextSize="10sp"
+                app:outcomingTimeTextSize="10sp"
+                app:outcomingBubblePaddingLeft="11dp"
+                app:outcomingBubblePaddingRight="11dp"
+                app:outcomingBubblePaddingTop="6dp"
+                app:outcomingBubblePaddingBottom="8dp"
+                app:incomingTextColor="#ff0a0a0a"
+                app:incomingAvatarHeight="32dp"
+                app:outgoingStatusHeight="13dp"
+                app:outgoingStatusWidth="13dp"
+                app:incomingDefaultBubbleColor="#ffeaeaea"
+                app:outcomingDefaultBubbleColor="#ff0084ff"
+                app:incomingAvatarWidth="32dp"
                 android:layout_below="@+id/toolbar"
                 android:layout_above="@+id/input"/>
 
@@ -96,11 +108,18 @@
                     />
             </LinearLayout>
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0.3dp"
+                android:background="#BBBBBB"
+                >
+
+            </LinearLayout>
 
             <com.stfalcon.chatkit.messages.MessageInput
                 android:id="@+id/input"
                 android:layout_width="match_parent"
-                app:inputTextColor="#ffffff"
+                app:inputTextColor="#000000"
                 android:layout_height="wrap_content"
                 app:inputTextSize="15sp"
                 android:layout_alignParentBottom="true"
