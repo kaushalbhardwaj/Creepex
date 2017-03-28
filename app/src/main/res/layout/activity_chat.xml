@@ -5,7 +5,7 @@
     android:id="@+id/activity_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.khome.storygame.Activity.ChatActivity">
+    tools:context="com.darkwolve.khome.storygame.Activity.ChatActivity">
 
 
 
@@ -26,11 +26,14 @@
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 app:titleTextColor="#ffffff"
+                android:theme="@style/toolbar_theme"
                 android:background="?attr/colorPrimary"
                 android:layout_height="?attr/actionBarSize" >
 
+
                 <LinearLayout
                     android:orientation="vertical"
+                    android:layout_marginLeft="10dp"
                     android:layout_marginTop="5dp"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
@@ -61,7 +64,6 @@
 
 
 
-
             <com.stfalcon.chatkit.messages.MessagesList
                 android:id="@+id/messagesList"
                 android:layout_width="match_parent"
@@ -73,8 +75,8 @@
                 app:incomingTimeTextSize="12sp"
                 app:outcomingTimeTextSize="12sp"
                 app:incomingAvatarHeight="30dp"
-                app:outgoingStatusHeight="15dp"
-                app:outgoingStatusWidth="15dp"
+                app:outgoingStatusHeight="10dp"
+                app:outgoingStatusWidth="10dp"
                 app:incomingAvatarWidth="30dp"
                 android:layout_below="@+id/toolbar"
                 android:layout_above="@+id/input"/>

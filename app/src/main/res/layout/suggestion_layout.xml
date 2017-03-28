@@ -5,22 +5,25 @@
 
     <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="fill_parent"
-        android:layout_margin="20dp"
+        android:layout_margin="40dp"
         android:id="@+id/radiogroup"
         android:layout_height="wrap_content"
         android:orientation="vertical">
         <RadioButton android:id="@+id/radio_suggestion0"
             android:layout_width="wrap_content"
+            android:layout_margin="10dp"
             android:layout_height="wrap_content"
             android:text="suggestion0"
             />
         <RadioButton android:id="@+id/radio_suggestion1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_margin="10dp"
             android:text="suggestion1"/>
         <RadioButton android:id="@+id/radio_suggestion2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_margin="10dp"
             android:text="suggestion2"/>
     </RadioGroup>
 
