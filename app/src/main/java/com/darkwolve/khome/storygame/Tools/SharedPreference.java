@@ -12,8 +12,8 @@ import android.support.annotation.Keep;
 public class SharedPreference {
     public static final String CurrentLocationPreference = "CurrentLocation" ;
     public static final String PositionKey = "positionKey";
-    public static final String FirstTimePreference = "FirstTime";
-    public static final String FirstKey = "firstKey";
+    public static final String PlayerNamePreference = "playername";
+    public static final String PlayerKey = "playerKey";
 
     public static SharedPreferences sharedpreference;
 
@@ -33,20 +33,20 @@ public class SharedPreference {
         return (sharedpreference.getInt(PositionKey, -1));
     }
 
-    public static boolean putFirstTimeStatus(Context con, int id)
+    public static boolean putPlayerName(Context con, String s )
     {
-        sharedpreference = con.getSharedPreferences(FirstTimePreference, Context.MODE_PRIVATE);
+        sharedpreference = con.getSharedPreferences(PlayerNamePreference, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedpreference.edit();
-        editor.putInt(FirstKey, id);
+        editor.putString(PlayerKey, s);
         editor.commit();
         return true;
     }
 
-    public static int getFirstTimeStatus(Context con)
+    public static String getPlayerName(Context con)
     {
 
-        sharedpreference = con.getSharedPreferences(FirstTimePreference, Context.MODE_PRIVATE);
-        return (sharedpreference.getInt(FirstKey, -1));
+        sharedpreference = con.getSharedPreferences(PlayerNamePreference, Context.MODE_PRIVATE);
+        return (sharedpreference.getString(PlayerKey, null));
     }
 
 

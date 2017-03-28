@@ -39,7 +39,7 @@
         android:layout_marginLeft="4dp"
         android:layout_marginRight="4dp"
         android:layout_marginBottom="4dp"
-        android:text="Mark Valentine"
+        android:text="David Valentine"
         android:hint="Full Name"/>
     <EditText
         android:id="@+id/nickname"
@@ -51,7 +51,7 @@
         android:layout_marginBottom="16dp"
         android:fontFamily="sans-serif"
         android:hint="Nick Name"
-        android:text="Mark"/>
+        android:text="David"/>
 
     <Button
         android:text="BEGIN STORY"

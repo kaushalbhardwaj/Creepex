@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
@@ -34,11 +35,12 @@ public class PlayerNameDialogFragment extends DialogFragment {
         View v=inflater.inflate(R.layout.dialog_signin, container, false);
 
         Button bt=ButterKnife.findById(v,R.id.button);
+        final EditText et=ButterKnife.findById(v,R.id.nickname);
         bt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 ChatActivity callingActivity = (ChatActivity) getActivity();
-                callingActivity.showFirstTime();
+                callingActivity.showFirstTime(et.getText().toString());
 
             }
         });

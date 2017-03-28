@@ -95,16 +95,30 @@
 
             <LinearLayout
                 android:id="@+id/typingDisplay"
-                android:orientation="vertical"
                 android:visibility="gone"
-                android:background="@color/warm_grey"
+                android:background="#FFFAFAFA"
                 android:layout_width="match_parent"
-                android:layout_height="40dp">
+                android:orientation="horizontal"
+                android:layout_height="60dp">
+
+                <android.support.v7.widget.AppCompatImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_alignParentLeft="true"
+                    android:layout_gravity="left|center_vertical"
+                    android:layout_marginBottom="5dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginLeft="20dp"
+                    app:srcCompat="@drawable/ic_man_user"
+                    android:id="@+id/imageView" />
 
                 <pl.droidsonroids.gif.GifImageView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:src="@drawable/giphy"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginBottom="5dp"
+                    android:layout_marginTop="5dp"
+                    android:src="@drawable/msg"
                     />
             </LinearLayout>
 

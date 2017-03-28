@@ -1,7 +1,7 @@
 package com.darkwolve.khome.storygame.Activity;
 
 import android.Manifest;
-import android.app.ActionBar;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -10,10 +10,8 @@ import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.support.annotation.Keep;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
@@ -35,7 +33,6 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.Toast;
 
 import com.darkwolve.khome.storygame.ChatClasses.Author;
 import com.darkwolve.khome.storygame.ChatClasses.Message;
@@ -91,6 +88,7 @@ public class ChatActivity extends AppCompatActivity {
     ImageButton inputButton;
     boolean permitTyping=false;
     boolean permitSuggestion=false;
+    ProgressDialog pd;
     EditText et;
 
     String typingText="Suggestion from AI";
@@ -134,8 +132,8 @@ public class ChatActivity extends AppCompatActivity {
         setUpListener();
         //setUpGlobalParameters();
 
-        startIntroductoryDialog();
-/*
+        //startIntroductoryDialog();
+
 
         if(SharedPreference.getCurrentPosition(getApplicationContext())==1)
         {
@@ -143,55 +141,43 @@ public class ChatActivity extends AppCompatActivity {
 
         }
         else {
-            setMessageList();
+
+                    pd=new ProgressDialog(ChatActivity.this);
+                    pd.setTitle("");
+                    pd.setMessage("");
+                    pd.setCancelable(false);
+                    pd.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                    pd.show();
+
+
+
+            new Handler().postDelayed(new Runnable() {
+
+                @Override
+                public void run() {
+
+                    setMessageList();
+                    pd.dismiss();
+
+                }
+            }, 3000);
+
+
+
+
+            //setMessageList();
 
         }
-*/
-        //setUpSuggestion();
 
 
-
-/*
-        int permissionCheck = ContextCompat.checkSelfPermission(ChatActivity.this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        if(permissionCheck==PackageManager.PERMISSION_GRANTED) {*/
-            /*try {
-            Message m = new Message();
-            m.setId("3");
-            m.setText("hi hw r u");
-            Author a=new Author();
-                a.setId("2");
-                m.setCreatedAt(new Date());
-                m.setAuthor(a);
-*/
-
-                //MessageWrapper mlist = myDatabase.getMessageNode(1);
-
-                //ArrayList<MessageWrapper> mw=myDatabase.getNextMessageNodes("5|6|7");
-
-        /*
-                myDatabase.putHistoryNode(mw);
-                //Log.e("database", mlist.getNextNode() + " "+mlist.getSubText());
-                //Log.e("database2", mw.size() + " ");
-            } catch (Exception e) {
-
-
-            }*/
-
- /*       }
-        else
-        {
-            Toast.makeText(this, "N0 Permission", Toast.LENGTH_SHORT).show();
-
-        }
-*/
 
     }
 
-    public void showFirstTime() {
+    public void showFirstTime(String name) {
 
         try {
             pdf.dismiss();
+            SharedPreference.putPlayerName(getApplicationContext(),name);
             String s="bot";
             MessageWrapper m = myDatabase.getMessageNode(1);
             if(m.getType().equals(s))
@@ -213,41 +199,50 @@ public class ChatActivity extends AppCompatActivity {
         //permitSuggestion=true;
     }
 
-    private void setUpParameters(MessageWrapper m) {
+    private void setUpParameters(final MessageWrapper m) {
+
+        new Handler().postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+
+                universalSuggestion=myDatabase.getNextMessageNodes(m.getNextNode());
+                String s2="bot";
+                String s3="end";
+
+                if(universalSuggestion.get(0).getType().equals(s3))
+                {
+                    showLastTime(universalSuggestion.get(0));
+
+                }
+
+                else if(universalSuggestion.get(0).getType().equals(s2))
+                {
+                    startBotTyping(universalSuggestion.get(0));
+
+                }
+                else
+                {
+                    for (int i=0;i<universalSuggestion.size();i++)
+                    {
+                        Date d=new Date();
+                        universalSuggestion.get(i).getMessage().getUser().setAvatar(IC_SENT);
+                        universalSuggestion.get(i).getMessage().getUser().setName("kaushal");
+                        universalSuggestion.get(i).getMessage().setCreatedAt(d);
 
 
-        universalSuggestion=myDatabase.getNextMessageNodes(m.getNextNode());
-        String s2="bot";
-        String s3="end";
 
-        if(universalSuggestion.get(0).getType().equals(s3))
-        {
-            showLastTime(universalSuggestion.get(0));
+                    }
 
-        }
-
-        else if(universalSuggestion.get(0).getType().equals(s2))
-        {
-            startBotTyping(universalSuggestion.get(0));
-
-        }
-        else
-        {
-            for (int i=0;i<universalSuggestion.size();i++)
-            {
-                Date d=new Date();
-                    universalSuggestion.get(i).getMessage().getUser().setAvatar(IC_SENT);
-                    universalSuggestion.get(i).getMessage().getUser().setName("kaushal");
-                    universalSuggestion.get(i).getMessage().setCreatedAt(d);
+                    permitSuggestion=true;
 
 
+                }
 
             }
+        }, 2000);
 
-            permitSuggestion=true;
 
-
-        }
 
 
 
@@ -309,6 +304,7 @@ public class ChatActivity extends AppCompatActivity {
         if (isFirstRun)
         {
             SharedPreference.putCurrentPosition(getApplicationContext(),1);
+            SharedPreference.putPlayerName(getApplicationContext(),"David");
             SharedPreferences.Editor editor = wmbPreference.edit();
             editor.putBoolean("FIRSTRUN", false);
             editor.commit();
@@ -347,7 +343,7 @@ public class ChatActivity extends AppCompatActivity {
                 AudioManager am = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
                 float vol = 1.0f; //This will be half of the default system sound
                 am.playSoundEffect(AudioManager.FX_KEY_CLICK, vol);
-                //playSound(R.raw.sound1);
+                //playSound(R.raw.sound_reached);
                 if(submitClicked==true)
                 {
                     inputButton.setEnabled(false);
@@ -474,7 +470,9 @@ public class ChatActivity extends AppCompatActivity {
 
                     }
                     oStatusMessage=m2;
-                   changeReachedStatus();
+                    playSound(R.raw.sound_sent);
+
+                    changeReachedStatus();
 
                 }
                 catch (Exception e)
@@ -544,10 +542,9 @@ public class ChatActivity extends AppCompatActivity {
 
                 oStatusMessage.getUser().setAvatar(IC_REACHED);
                 adapter.updateElement(oStatusMessage,0);
-                playSound(R.raw.sound1);
                 changeReadStatus();
             }
-        }, DELAY_REACHED);
+        }, 2000);
 
     }
     public void changeReadStatus()
@@ -559,11 +556,11 @@ public class ChatActivity extends AppCompatActivity {
 
                 oStatusMessage.getUser().setAvatar(IC_AI);
                 adapter.updateElement(oStatusMessage,0);
-                playSound(R.raw.sound1);
+                playSound(R.raw.sound_read);
                 setUpParameters(universalSuggestion.get(selectedIndex));
                 //showSuggestion();
             }
-        }, DELAY_READ);
+        }, 2000);
 
     }
 
@@ -587,9 +584,9 @@ public class ChatActivity extends AppCompatActivity {
 
     }
 
-    public void startBotTyping(MessageWrapper m)
+    public void startBotTyping(final MessageWrapper m)
     {
-        Message m1=new Message();
+        final Message m1=new Message();
         Date date = new Date();
 
         m1.setId(m.getMessage().getId());
@@ -602,16 +599,31 @@ public class ChatActivity extends AppCompatActivity {
         a.setName("Annie96");
         a.setAvatar(IC_AI);
         m1.setAuthor(a);
-        MessageWrapper mw=new MessageWrapper();
+        final MessageWrapper mw=new MessageWrapper();
         mw.setMessage(m1);
         mw.setType("bot");
 
-        adapter.addToStart(m1,true);
-        myDatabase.putHistoryNode(mw);
+        typingLayout.setVisibility(View.VISIBLE);
+        playSound(R.raw.sound_typing);
 
-        SharedPreference.putCurrentPosition(getApplicationContext(),Integer.parseInt(m1.getId()));
-        //setMessageList();
-        setUpParameters(m);
+        new Handler().postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+
+
+                typingLayout.setVisibility(View.GONE);
+                adapter.addToStart(m1,true);
+                myDatabase.putHistoryNode(mw);
+
+                SharedPreference.putCurrentPosition(getApplicationContext(),Integer.parseInt(m1.getId()));
+                //setMessageList();
+                setUpParameters(m);
+
+            }
+        }, 3000);
+
+
 
     }
 
@@ -704,9 +716,6 @@ public class ChatActivity extends AppCompatActivity {
 
     private void startIntroductoryDialog() {
 
-        //showFirstTime();
-
-
 
         AlertDialog.Builder builder = new AlertDialog.Builder(ChatActivity.this);
 // Add the buttons
@@ -731,7 +740,6 @@ public class ChatActivity extends AppCompatActivity {
 
                 finish();
 
-                //showFirstTime();
             }
         });
 
