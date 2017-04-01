@@ -90,6 +90,7 @@ public class ChatActivity extends AppCompatActivity {
     boolean permitSuggestion=false;
     ProgressDialog pd;
     EditText et;
+    MediaPlayer mp;
 
     String typingText="Suggestion from AI";
     RetrievalDatabaseHandler myDatabase;
@@ -276,8 +277,8 @@ public class ChatActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(ChatActivity.this);
 // Add the buttons
 
-        builder.setMessage("Thank you for playing the game hope you have enjoyed the game")
-                .setTitle("annie96 is typing...");
+        builder.setMessage("annie96 is now offline")
+                .setTitle("");
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
 
@@ -340,9 +341,13 @@ public class ChatActivity extends AppCompatActivity {
             public void beforeTextChanged(CharSequence s,int start,int count, int after){}
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 inputEdit.removeTextChangedListener(textListener);
-                AudioManager am = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+                /*AudioManager am = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
                 float vol = 1.0f; //This will be half of the default system sound
                 am.playSoundEffect(AudioManager.FX_KEY_CLICK, vol);
+                */
+
+
+
                 //playSound(R.raw.sound_reached);
                 if(submitClicked==true)
                 {
@@ -354,6 +359,18 @@ public class ChatActivity extends AppCompatActivity {
                     inputEdit.setText(typingText.subSequence(0, f));
                     inputEdit.setSelection(f);
                     inputButton.setEnabled(false);
+                    try {
+                        if (mp.isPlaying()) {
+                            mp.stop();
+                            mp.release();
+                            mp = MediaPlayer.create(ChatActivity.this, R.raw.type);
+                        }
+                        mp.start();
+                    } catch(Exception e)
+                    {
+                        mp = MediaPlayer.create(ChatActivity.this, R.raw.type);
+
+                    }
 
                 }
                 else
@@ -399,6 +416,7 @@ public class ChatActivity extends AppCompatActivity {
                     }
                     else
                     {
+                        selectedIndex=0;
                         typingText=universalSuggestion.get(0).getMessage().getText();
                         suggestionshow=true;
                         openKeyboard(inputView.getInputEditText());
@@ -446,7 +464,7 @@ public class ChatActivity extends AppCompatActivity {
 
                 SharedPreference.putCurrentPosition(getApplicationContext(),Integer.parseInt(m1.getId()));
 
-                Message m2=new Message();
+                final Message m2=new Message();
                 m2.setCreatedAt(universalSuggestion.get(selectedIndex).getMessage().getCreatedAt());
                 m2.setId(universalSuggestion.get(selectedIndex).getMessage().getId());
                 //m2.setText(universalSuggestion.get(selectedIndex).getMessage().getText());
@@ -458,27 +476,37 @@ public class ChatActivity extends AppCompatActivity {
                 a2.setName(universalSuggestion.get(selectedIndex).getMessage().getUser().getName());
                 m2.setAuthor(a2);
 
-                try {
-                    if(oStatusMessage==null) {
+                new Handler().postDelayed(new Runnable() {
+
+                    @Override
+                    public void run() {
+
+                        try {
+                            if(oStatusMessage==null) {
+
+                            }
+                            else
+                            {
+                                oStatusMessage.getUser().setAvatar(null);
+                                adapter.updateElement(oStatusMessage, 2);
+
+
+                            }
+
+                            oStatusMessage=m2;
+
+                            changeReachedStatus();
+
+                        }
+                        catch (Exception e)
+                        {
+
+                        }
+
 
                     }
-                    else
-                    {
-                        oStatusMessage.getUser().setAvatar(null);
-                        adapter.updateElement(oStatusMessage, 2);
+                }, 500);
 
-
-                    }
-                    oStatusMessage=m2;
-                    playSound(R.raw.sound_sent);
-
-                    changeReachedStatus();
-
-                }
-                catch (Exception e)
-                {
-
-                }
 
 
                 return true;
@@ -541,6 +569,7 @@ public class ChatActivity extends AppCompatActivity {
             public void run() {
 
                 oStatusMessage.getUser().setAvatar(IC_REACHED);
+                playSound(R.raw.sent);
                 adapter.updateElement(oStatusMessage,0);
                 changeReadStatus();
             }
@@ -556,7 +585,7 @@ public class ChatActivity extends AppCompatActivity {
 
                 oStatusMessage.getUser().setAvatar(IC_AI);
                 adapter.updateElement(oStatusMessage,0);
-                playSound(R.raw.sound_read);
+                playSound(R.raw.seen);
                 setUpParameters(universalSuggestion.get(selectedIndex));
                 //showSuggestion();
             }
@@ -572,6 +601,7 @@ public class ChatActivity extends AppCompatActivity {
     public void openKeyboard(EditText et)
     {
 
+        mp = MediaPlayer.create(ChatActivity.this, R.raw.type);
         permitTyping=true;
         permitSuggestion=false;
 
@@ -604,7 +634,7 @@ public class ChatActivity extends AppCompatActivity {
         mw.setType("bot");
 
         typingLayout.setVisibility(View.VISIBLE);
-        playSound(R.raw.sound_typing);
+        playSound(R.raw.typing);
 
         new Handler().postDelayed(new Runnable() {
 
@@ -615,13 +645,14 @@ public class ChatActivity extends AppCompatActivity {
                 typingLayout.setVisibility(View.GONE);
                 adapter.addToStart(m1,true);
                 myDatabase.putHistoryNode(mw);
+                playSound(R.raw.ring);
 
                 SharedPreference.putCurrentPosition(getApplicationContext(),Integer.parseInt(m1.getId()));
                 //setMessageList();
                 setUpParameters(m);
 
             }
-        }, 3000);
+        }, 3500);
 
 
 
@@ -643,48 +674,6 @@ public class ChatActivity extends AppCompatActivity {
         setUpParameters(mw);
 
 
-
-        //setUpParameters();
-
-       /* m=new ArrayList<Message>();
-
-        adapter = new MessagesListAdapter<>("1",imageLoader);
-        Date date = new Date();
-
-        Message m1=new Message();
-        m1.setId("2");
-        m1.setText("Hi hw r u??");
-        m1.setCreatedAt(date);
-
-        Author a= new Author();
-        a.setId("2");
-        a.setName("Kaushal");
-        a.setAvatar(IC_AI);
-        m1.setAuthor(a);
-
-        m.add(m1);
-        m.add(m1);
-
-
-
-        messagesList.setAdapter(adapter);
-
-
-        adapter.addToEnd(m, true);
-
-        Message m2=new Message();
-        Date d2=new Date();
-        m2.setCreatedAt(d2);
-        m2.setText("who are u?? who are u?? who are u??  who are u?? who are u?? who are u?? who are u??  who are u??  ");
-        m2.setId("1");
-        Author a2= new Author();
-        a2.setId("1");
-        a2.setName("kaushal");
-        a2.setAvatar(IC_AI);
-        m2.setAuthor(a2);
-        adapter.addToStart(m2,true);*/
-
-        //oStatusMessage=m2;
 
     }
 
@@ -826,9 +815,6 @@ public class ChatActivity extends AppCompatActivity {
             if (ActivityCompat.shouldShowRequestPermissionRationale(ChatActivity.this,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
 
-                // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
 
             } else {
 
@@ -838,9 +824,6 @@ public class ChatActivity extends AppCompatActivity {
                         new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                         2);
 
-                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
-                // app-defined int constant. The callback method gets the
-                // result of the request.
             }
         }
 
@@ -852,9 +835,6 @@ public class ChatActivity extends AppCompatActivity {
             case android.R.id.home:
                 try {
 
-                    /*Intent i=new Intent(ChatActivity.this,StorySelectionActivity.class);
-                    startActivity(i);
-                    finish();*/
                 }
                 catch (Exception e)
                 {
@@ -877,9 +857,6 @@ public class ChatActivity extends AppCompatActivity {
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-
-                    // permission was granted, yay! Do the
-                    // contacts-related task you need to do.
 
                 } else {
 
